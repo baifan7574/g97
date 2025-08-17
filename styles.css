@@ -1,0 +1,75 @@
+
+body {
+  background: #111;
+  color: white;
+  font-family: Georgia, serif;
+  margin: 0;
+  padding: 0;
+}
+
+header {
+  text-align: center;
+  padding: 40px 20px 10px;
+}
+
+header h1 {
+  font-size: 48px;
+  margin-bottom: 5px;
+}
+
+.subtitle {
+  font-size: 18px;
+  color: #ccc;
+}
+
+.section {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  align-items: center;
+  justify-content: center; /* ✅ 添加这行确保居中 */
+}
+
+
+.category {
+  width: 90%;
+  max-width: 1100px;
+  margin: 0 auto;  /* ✅ 这一行让整个 category 居中显示 */
+}
+
+.category h2 {
+  font-size: 28px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #333;
+  padding-bottom: 5px;
+}
+
+.gallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.thumb {
+  width: 30%;
+  border-radius: 8px;
+  box-shadow: 0 0 8px #000;
+  transition: transform 0.3s ease;
+}
+
+.thumb:hover {
+  transform: scale(1.03);
+}
+
+.view-more {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.view-more a {
+  color: #aaa;
+  text-decoration: none;
+  font-size: 16px;
+}

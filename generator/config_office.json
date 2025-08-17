@@ -1,0 +1,21 @@
+{
+  "model": "realisticVisionV60B1_v51HyperVAE",
+  "lora": "",
+  "width": 512,
+  "height": 768,
+  "steps": 23,
+  "cfg_scale": 6.8,
+  "sampler_index": "DPM++ 2M",
+  "hires_fix": true,
+  "hires_upscaler": "Latent",
+  "hires_scale": 1.5,
+  "hires_denoising_strength": 0.5,
+  "refiner": false,
+  "batch_size": 20,
+  "total_images": 1,
+  "seed": 1168507022,
+  "negative_prompt": "nsfw, nude, lowres, cartoon, text, logo, watermark, ugly, deformed, extra fingers, poorly drawn hands, distorted face, blurry, noisy, overexposed, underexposed, messy background",
+  "prompt": "photo-realistic portrait, clean corporate office, window backlight, confident professional look, office girl desk",
+  "output_dir": "../office",
+  "category": "office"
+}

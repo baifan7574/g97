@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Gentleman’s Frame</title>
+  <link rel="stylesheet" href="lightbox.min.css">
+  <script src="lightbox-plus-jquery.js"></script>
+  <style>
+    body {
+      background: #111;
+      color: white;
+      font-family: Georgia, serif;
+      margin: 0;
+    }
+
+    header {
+      text-align: center;
+      padding: 40px 10px 20px;
+    }
+
+    header h1 {
+      font-size: 48px;
+      margin-bottom: 10px;
+    }
+
+    section {
+      padding: 20px;
+      text-align: center;
+    }
+
+    section h2 {
+      border-bottom: 1px solid #444;
+      margin-bottom: 20px;
+      font-size: 24px;
+    }
+
+    .gallery {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 14px;
+    }
+
+    .gallery a img {
+      width: 160px;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 8px;
+      background: #333;
+      cursor: pointer;
+    }
+
+    .gallery a img:hover {
+      opacity: 0.8;
+    }
+
+    .more {
+      margin-top: 10px;
+      font-size: 14px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      background: #222;
+      font-size: 14px;
+      color: #888;
+    }
+
+    footer a {
+      color: #aaa;
+      text-decoration: none;
+    }
+
+    .lightbox-content {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      z-index: 100;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .lightbox-container img {
+      max-width: 80%;
+      max-height: 80%;
+    }
+
+    .arrow-btn {
+      position: absolute;
+      top: 50%;
+      z-index: 100;
+      background-color: rgba(0, 0, 0, 0.5);
+      color: white;
+      padding: 10px;
+      cursor: pointer;
+      font-size: 24px;
+    }
+
+    .arrow-left {
+      left: 10px;
+    }
+
+    .arrow-right {
+      right: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Gentleman’s Frame</h1>
+  <p>For Men Who Appreciate More Than Beauty.</p>
+</header>
+
+<section>
+  <h2>Dark</h2>
+  <div class="gallery">
+    <a href="dark/00001-1281862502.png" data-lightbox="dark"><img src="dark/00001-1281862502.png" alt="dark1"></a>
+    <a href="dark/00002-1281862503.png" data-lightbox="dark"><img src="dark/00002-1281862503.png" alt="dark2"></a>
+    <a href="dark/00003-1281862504.png" data-lightbox="dark"><img src="dark/00003-1281862504.png" alt="dark3"></a>
+    <a href="dark/00004-1281862505.png" data-lightbox="dark"><img src="dark/00004-1281862505.png" alt="dark4"></a>
+  </div>
+  <div class="more"><a href="dark.html">→ View More</a></div>
+</section>
+
+<section>
+  <h2>Office</h2>
+  <div class="gallery">
+    <a href="office/20250706_141204_01.jpg" data-lightbox="office"><img src="office/20250706_141204_01.jpg" alt="office1"></a>
+    <a href="office/20250706_141204_02.jpg" data-lightbox="office"><img src="office/20250706_141204_02.jpg" alt="office2"></a>
+    <a href="office/20250706_141204_03.jpg" data-lightbox="office"><img src="office/20250706_141204_03.jpg" alt="office3"></a>
+    <a href="office/20250706_141204_04.jpg" data-lightbox="office"><img src="office/20250706_141204_04.jpg" alt="office4"></a>
+  </div>
+  <div class="more"><a href="office.html">→ View More</a></div>
+</section>
+
+<!-- Footer with Links -->
+<footer>
+  <a href="about.html">About Us</a> | 
+  <a href="privacy.html">Privacy Policy</a> | 
+  <a href="contact.html">Contact</a>
+</footer>
+
+<!-- Lightbox Script for Image Popups with Navigation -->
+<script>
+  const images = document.querySelectorAll('.gallery a');
+
+  images.forEach(image => {
+    image.addEventListener('click', function (e) {
+      e.preventDefault();
+      const currentImage = this.querySelector('img').src;
+      const lightboxContent = `
+        <div class="lightbox-content">
+          <div class="lightbox-container">
+            <img src="${currentImage}" alt="large-image">
+            <div class="arrow-btn arrow-left" onclick="navigate(-1)">&#10094;</div>
+            <div class="arrow-btn arrow-right" onclick="navigate(1)">&#10095;</div>
+          </div>
+        </div>
+      `;
+      document.body.insertAdjacentHTML('beforeend', lightboxContent);
+    });
+  });
+
+  function navigate(direction) {
+    const currentImage = document.querySelector('.lightbox-container img');
+    const allImages = [...images];
+    const currentIndex = allImages.findIndex(img => img.querySelector('img').src === currentImage.src);
+    const newIndex = currentIndex + direction;
+
+    if (newIndex >= 0 && newIndex < allImages.length) {
+      const newImageSrc = allImages[newIndex].querySelector('img').src;
+      currentImage.src = newImageSrc;
+    }
+  }
+
+  document.addEventListener('click', function (e) {
+    if (e.target.classList.contains('lightbox-content')) {
+      e.target.remove();
+    }
+  });
+</script>
+
+</body>
+</html>
