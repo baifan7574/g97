@@ -1,129 +1,163 @@
 # -*- coding: utf-8 -*-
-"""
-auto2_generate_fixed_loop_autopath.py
-目的：保持与你现有 BAT 完全兼容；只需双击原来的 bat。
-做法：自动扫描当前目录的 config_*.json，逐分类批量出图（9:16写实、干净无字、随机不重复）。
-依赖：AUTOMATIC1111 启动时加 --api；（可选）ADetailer 插件。
-"""
-import os, json, time, base64, datetime, random
-from pathlib import Path
-import requests
+import os, json, time, random, base64, requests
+from datetime import datetime
+from typing import Dict, Any, List, Optional
 
-HERE = Path(__file__).resolve().parent
-SERVER = os.environ.get("SD_SERVER", "http://127.0.0.1:7860")
+API_URL = "http://127.0.0.1:7860/sdapi/v1/txt2img"
+TIMEOUT = 180
+MAX_RETRY = 3
+WAIT_API_SECONDS = 60   # 最长等 API 就绪 60 秒
 
-def load_configs():
-    return sorted(HERE.glob("config_*.json"))
+DEFAULT_CATEGORIES = ["bedroom","dark","office","soft","uniform","shower","mirror","fitness","luxury","redroom"]
 
-def ensure_dir(p: Path):
-    p.mkdir(parents=True, exist_ok=True)
+def here(): return os.path.dirname(os.path.abspath(__file__))
+def parent_here(): return os.path.abspath(os.path.join(here(),".."))
 
-def choose_one(lst):
-    return random.choice(lst) if lst else ""
+def ensure_dir(p): os.makedirs(p, exist_ok=True)
 
-def build_prompt(cfg):
-    base = cfg["base_style"]
-    parts = []
-    for key in ["scene","outfit","lighting","color","pose","camera"]:
-        items = cfg.get("prompt_blocks",{}).get(key, [])
-        if items: parts.append(choose_one(items))
-    parts = [p for p in parts if p]
-    uniq = []
-    for p in parts:
-        if p not in uniq: uniq.append(p)
-    return f"{base}, " + ", ".join(uniq)
+def wait_api_ready():
+    deadline = time.time() + WAIT_API_SECONDS
+    while time.time() < deadline:
+        try:
+            r = requests.get("http://127.0.0.1:7860/sdapi/v1/progress", timeout=5)
+            if r.status_code == 200: 
+                print("[OK] WebUI API 就绪")
+                return
+        except: pass
+        print("[INFO] 等待 WebUI API 就绪…")
+        time.sleep(2)
+    print("[WARN] 等待超时，继续尝试请求。")
 
-def seed_for(cfg, i):
-    mode = cfg.get("seed_mode","site")     # 默认按站点区间
-    if mode == "fixed":
-        s = int(cfg.get("seed_fixed", 123456))
-    elif mode == "site":
-        site_id = int(cfg.get("site_id", 0))
-        s = random.randint(site_id*100000, site_id*100000+99999)
-    else:
-        s = -1
-    if s >= 0: s = s + i                    # 轻抖动避免重复
-    return s
+def load_json(path) -> Optional[Dict[str,Any]]:
+    if os.path.isfile(path):
+        with open(path,"r",encoding="utf-8") as f:
+            return json.load(f)
+    return None
 
-def save_image(b64, outdir: Path, idx: int):
-    ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    fname = f"{ts}_{idx:02d}.jpg"
-    ensure_dir(outdir)
-    (outdir/fname).write_bytes(base64.b64decode(b64))
-    return str(outdir/fname)
+def load_keywords(category:str)->List[str]:
+    kw_dir = os.path.join(parent_here(),"keywords")
+    kw_path = os.path.join(kw_dir,f"{category}.txt")
+    if not os.path.isfile(kw_path): return []
+    out=[]
+    with open(kw_path,"r",encoding="utf-8",errors="ignore") as f:
+        for line in f:
+            s=line.strip()
+            if s and not s.startswith("#"):
+                out.append(s)
+    return out
 
-def call_txt2img(payload):
-    url = SERVER.rstrip("/") + "/sdapi/v1/txt2img"
-    r = requests.post(url, json=payload, timeout=300)
-    r.raise_for_status()
-    return r.json()
+def build_output_dir(category:str)->str:
+    out_dir = os.path.abspath(os.path.join(here(),"..",category))
+    ensure_dir(out_dir)
+    return out_dir
 
-def try_with_or_without_adetailer(payload):
-    try:
-        return call_txt2img(payload)
-    except Exception:
-        p2 = dict(payload); p2.pop("alwayson_scripts", None)
-        return call_txt2img(p2)
+def b64_to_file(b64data:str, out_path:str):
+    with open(out_path,"wb") as f:
+        f.write(base64.b64decode(b64data))
 
-def build_payload(cfg, prompt, negative, seed):
-    p = {
-        "prompt": prompt,
-        "negative_prompt": negative,
-        "sampler_name": cfg["sampler_name"],
-        "steps": int(cfg["steps"]),
-        "cfg_scale": float(cfg["cfg_scale"]),
-        "width": int(cfg["width"]),
-        "height": int(cfg["height"]),
-        "seed": seed,
-        "restore_faces": False,
-        "enable_hr": bool(cfg["hires_fix"]["enable"]),
-        "hr_scale": float(cfg["hires_fix"]["scale"]),
-        "denoising_strength": float(cfg["hires_fix"]["denoise"]),
-        "hr_upscaler": cfg["hires_fix"]["upscaler"],
-        "hr_second_pass_steps": 0,
-    }
-    if cfg.get("adetailer",{}).get("enable", False):
-        ad = cfg["adetailer"]
-        p["alwayson_scripts"] = {"ADetailer": {
-            "args": [
-                {"ad_model":"face_yolov8n.pt",
-                 "ad_prompt": ad.get("face_prompt","clear pupils, sharp eyelashes, well-defined lips, natural skin texture"),
-                 "ad_denoising_strength": float(ad.get("face_denoise",0.38)),
-                 "ad_confidence": float(ad.get("confidence",0.3))},
-                {"ad_model":"hand_yolov8n.pt",
-                 "ad_prompt": ad.get("hand_prompt","well-formed hands, natural fingers"),
-                 "ad_denoising_strength": float(ad.get("hand_denoise",0.30)),
-                 "ad_confidence": float(ad.get("confidence",0.3))}
-            ]
-        }}
-    return p
+# —— 默认稳定参数（显存友好 + 画面稳定）——
+DEFAULT_PAYLOAD: Dict[str,Any] = {
+    "prompt": "",
+    "negative_prompt": "(worst quality, low quality, normal quality:1.2), "
+                       "(duplicate:1.4), (two faces:1.4), (two heads:1.4), (twins:1.4), "
+                       "split screen, collage, multiple reflections, extra head, extra body, "
+                       "bad anatomy, missing fingers, bad hands, deformed, watermark, text, logo, blurry",
+    "sampler_name": "DPM++ 2M Karras",
+    "steps": 30,
+    "cfg_scale": 6.5,
+    "width": 768,
+    "height": 1344,
+    "seed": -1,
+    "save_images": False,
+    "restore_faces": False,
+    "enable_hr": True,
+    "hr_scale": 1.5,
+    "hr_upscaler": "R-ESRGAN 4x+ Anime6B",   # 若你本地叫别的名，改成对应名字即可
+    "denoising_strength": 0.30,
+    "override_settings": {
+        "outdir_txt2img_samples": "",
+        "outdir_txt2img_grids": "",
+        "outdir_save": ""
+    },
+    "batch_size": 1
+}
 
-def main():
-    print("🔁 扫描分类配置并开始批量生成…")
-    files = load_configs()
-    if not files:
-        print("未发现 config_*.json，退出。"); return
-    print("已检测：", ", ".join([f.name for f in files]))
+ALLOWED_KEYS = {
+    "prompt","base_prompt","negative_prompt","sampler_name","steps","cfg_scale",
+    "width","height","seed","enable_hr","hr_scale","hr_upscaler","denoising_strength",
+    "batch_size","images_count"
+}
 
-    for cfg_path in files:
-        cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
-        outdir = Path(cfg.get("outdir", f"./output/{cfg.get('category','misc')}")).resolve()
-        n = int(cfg.get("images", 20)); used=set(); ok=0
-        print(f"\n=== 分类 {cfg.get('category')} | 目标 {n} 张 | 输出 {outdir} ===")
-        for i in range(1, n+1):
-            for _ in range(30):
-                prompt = build_prompt(cfg)
-                if prompt not in used: used.add(prompt); break
-            seed = seed_for(cfg, i)
-            payload = build_payload(cfg, prompt, cfg["negative_prompt"], seed)
+def merge_payload(base:Dict[str,Any], override:Dict[str,Any])->Dict[str,Any]:
+    x = base.copy()
+    for k,v in override.items():
+        if k=="override_settings":
+            x.setdefault("override_settings",{}); x["override_settings"].update(v)
+        elif k in base or k in ALLOWED_KEYS:
+            x[k]=v
+    return x
+
+def pick_keyword(kws:List[str])->str:
+    return random.choice(kws) if kws else ""
+
+def run_category(category:str):
+    # 读取分类配置（脚本同目录 config_<category>.json）
+    cfg_path = os.path.join(here(), f"config_{category}.json")
+    cfg = load_json(cfg_path) or {}
+    for k in list(cfg.keys()):
+        if k not in ALLOWED_KEYS: cfg.pop(k,None)
+
+    images_count = int(cfg.get("images_count", 20))
+    base_prompt  = cfg.get("base_prompt","")
+    kws = load_keywords(category)
+    out_dir = build_output_dir(category)
+
+    payload_base = merge_payload(DEFAULT_PAYLOAD, cfg)
+    print(f"\n=== 分类 {category} | 目标 {images_count} 张 | 输出 {out_dir} ===")
+
+    generated = 0
+    file_idx = 1
+
+    while generated < images_count:
+        kw = pick_keyword(kws)
+        prompt = (base_prompt + (", "+kw if kw else "")).strip() if base_prompt else kw
+        payload = payload_base.copy()
+        payload["prompt"] = prompt
+
+        # 请求（带重试）
+        for attempt in range(1, MAX_RETRY+1):
             try:
-                resp = try_with_or_without_adetailer(payload)
-                path = save_image(resp["images"][0], outdir, i)
-                ok += 1; print(f"[OK] {cfg.get('category')} #{i:02d} -> {path}")
+                r = requests.post(API_URL, json=payload, timeout=TIMEOUT)
+                if r.status_code != 200:
+                    print(f"[WARN] API {r.status_code}: {r.text[:200]}")
+                    time.sleep(2*attempt); continue
+                data = r.json()
+                imgs = data.get("images",[])
+                if not imgs:
+                    print("[WARN] 无 images 字段，重试"); time.sleep(2*attempt); continue
+
+                for img_b64 in imgs:
+                    fname = f"{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}_{file_idx:02d}.jpg"
+                    fpath = os.path.join(out_dir, fname)
+                    b64_to_file(img_b64, fpath)
+                    print(f"[OK] {category} -> {fname}   （{kw or '无关键词'}）")
+                    generated += 1; file_idx += 1
+                    if generated >= images_count: break
+                break
             except Exception as e:
-                print(f"[失败] {cfg.get('category')} #{i:02d}：{e}")
-            time.sleep(0.2)
-        print(f"完成 {cfg.get('category')}：{ok}/{n} 张")
+                print(f"[ERROR] 请求失败({attempt}/{MAX_RETRY})：{e}")
+                time.sleep(2*attempt)
+        else:
+            print("[FATAL] 连续失败，跳过该分类")
+            break
+
+def main(cats:Optional[List[str]]=None):
+    wait_api_ready()
+    cats = cats or DEFAULT_CATEGORIES
+    print("将按如下分类生成：", ", ".join(cats))
+    for c in cats:
+        run_category(c)
+    print("\n全部完成。")
 
 if __name__ == "__main__":
     main()

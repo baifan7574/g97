@@ -1,0 +1,43 @@
+{
+  "global": {
+    "css_once": true,
+    "popup_delay_ms": 1800,
+    "float_show_delay_ms": 1200,
+    "enable_on_home": true,
+    "enable_on_inner": true,
+    "mobile_head_snippets": [
+      "<!-- NB: JuicyAds PopUnder v3 --><script type=\"text/javascript\" src=\"https://js.juicyads.com/jp.php?c=4464w223v254u4r2o2f403d4a4&u=https%3A%2F%2Fwww.juicyads.rocks\"></script><!-- /NB: JuicyAds PopUnder v3 -->"
+    ]
+  },
+  "home": {
+    "top_banner": [
+      "<!-- NB:TopBanner 728x90 --><script type=\"text/javascript\" data-cfasync=\"false\" async src=\"https://poweredby.jads.co/js/jads.js\"></script><ins id=\"1099405\" data-width=\"728\" data-height=\"90\"></ins><script>(adsbyjuicy=window.adsbyjuicy||[]).push({adzone:1099405});</script><!-- /NB:TopBanner -->"
+    ],
+    "bottom_banner": [
+      "<!-- NB:BottomBanner 774x290 --><script type=\"text/javascript\" data-cfasync=\"false\" async src=\"https://poweredby.jads.co/js/jads.js\"></script><ins id=\"1098992\" data-width=\"774\" data-height=\"290\"></ins><script>(adsbyjuicy=window.adsbyjuicy||[]).push({adzone:1098992});</script><!-- /NB:BottomBanner -->"
+    ],
+    "left_sky": [
+      "<!-- NB:LeftSky 160x600 --><script type=\"text/javascript\" data-cfasync=\"false\" async src=\"https://poweredby.jads.co/js/jads.js\"></script><ins id=\"1099008\" data-width=\"160\" data-height=\"600\"></ins><script>(adsbyjuicy=window.adsbyjuicy||[]).push({adzone:1099008});</script><!-- /NB:LeftSky -->"
+    ],
+    "right_sky": [
+      "<!-- NB:RightSky 160x600 --><script type=\"text/javascript\" data-cfasync=\"false\" async src=\"https://poweredby.jads.co/js/jads.js\"></script><ins id=\"1099009\" data-width=\"160\" data-height=\"600\"></ins><script>(adsbyjuicy=window.adsbyjuicy||[]).push({adzone:1099009});</script><!-- /NB:RightSky -->"
+    ],
+    "floating": [
+      "<!-- NB:Floating (JuicyAds jfc.js) --><script type=\"text/javascript\">juicy_adzone='1098993';</script><script type=\"text/javascript\" src=\"https://poweredby.jads.co/js/jfc.js\" charset=\"utf-8\"></script><!-- /NB:Floating -->"
+    ],
+    "popup": [
+      "<!-- NB:Popup (modal 300x250, cookie-1day) --><script>!function(){if(document.cookie.includes('nbpop=1'))return;setTimeout(function(){var m=document.createElement('div');m.className='nb-modal';m.innerHTML=`<div class='nb-modal-inner'><button class='nb-close' aria-label='Close'>&times;</button><div class='nb-ad-slot'></div></div>`;document.body.appendChild(m);m.querySelector('.nb-close').onclick=function(){m.remove();document.cookie='nbpop=1;max-age=86400;path=/'};m.addEventListener('click',e=>{if(e.target===m){m.remove();document.cookie='nbpop=1;max-age=86400;path=/'}});m.querySelector('.nb-ad-slot').innerHTML=`<script type=\"text/javascript\" data-cfasync=\"false\" async src=\"https://poweredby.jads.co/js/jads.js\"><\/script><ins id=\"1098989\" data-width=\"300\" data-height=\"250\"></ins><script>(adsbyjuicy=window.adsbyjuicy||[]).push({adzone:1098989});<\/script>`},1800)}();</script><!-- /NB:Popup -->"
+    ]
+  },
+  "inner": {
+    "top_banner": [
+      "<!-- NB:TopBanner 728x90 --><script type=\"text/javascript\" data-cfasync=\"false\" async src=\"https://poweredby.jads.co/js/jads.js\"></script><ins id=\"1099405\" data-width=\"728\" data-height=\"90\"></ins><script>(adsbyjuicy=window.adsbyjuicy||[]).push({adzone:1099405});</script><!-- /NB:TopBanner -->"
+    ],
+    "bottom_banner": [
+      "<!-- NB:BottomBanner 300x100 --><script type=\"text/javascript\" data-cfasync=\"false\" async src=\"https://poweredby.jads.co/js/jads.js\"></script><ins id=\"1098991\" data-width=\"300\" data-height=\"100\"></ins><script>(adsbyjuicy=window.adsbyjuicy||[]).push({adzone:1098991});</script><!-- /NB:BottomBanner -->"
+    ],
+    "floating": [
+      "<!-- NB:Floating (JuicyAds jfc.js) --><script type=\"text/javascript\">juicy_adzone='1098993';</script><script type=\"text/javascript\" src=\"https://poweredby.jads.co/js/jfc.js\" charset=\"utf-8\"></script><!-- /NB:Floating -->"
+    ]
+  }
+}

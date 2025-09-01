@@ -23,6 +23,11 @@
   "category": "bedroom",
   "site_id": 102,
   "outdir": "./output/bedroom",
+
+  "base_prompt": "cozy bedroom, soft natural window light, warm tone, shallow depth of field, sitting on bed, delicate makeup, detailed skin",
+  "images_count": 20,
+  "denoising_strength": 0.25,
+
   "prompt_blocks": {
     "scene": [
       "cozy bedroom",
