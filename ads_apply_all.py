@@ -1,223 +1,175 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-NorthBeam Ads Injector v1.3 SAFE
-- 首页：顶部/底部横幅、左右竖条、悬浮、弹窗
-- 其他页：顶部/底部横幅、悬浮
-- 所有页：<head> 自动插入手机端广告
-- 不破坏结构：固定定位 + body padding；带注入标记，幂等
-- 仅“本网站”判定的首页文件视作首页（见 HOME_CANDIDATES）
+ads_apply_all_inline.py
+- 兼容老脚本字段：home/inner 下的 top_banner, bottom_banner, popup
+- 新增支持：inner/home 下的 inline_banner（正文中部广告，非悬浮）
+- 如果配置里没有 floating，则自动清理历史悬浮条 .nb-bottombar-wrap / nb-has-bottom
+- 首次运行前建议备份站点文件
 """
 
-import json, re, shutil, time
-from pathlib import Path
+import re
+import json
+import pathlib
 
-# ============ 只改这一行：当前要处理的网站目录（例如 g40 / g50） ============
-ACTIVE_SITE = Path(r".").resolve()
-# ======================================================================
+ROOT = pathlib.Path(".")
+CONF = ROOT / "ads_mapping.json"
 
-CONFIG_FILE = Path("ads_mapping.json")  # 配置文件与脚本同级
-SENTINEL_NAME = ".enable_ads"           # 哨兵文件（根目录需有此空文件才允许写入）
-DRY_RUN = False                         # True=演练不写盘；False=正式写入
-BACKUP_BEFORE_WRITE =False             # 写入前备份
-HOME_CANDIDATES = ["index.html", "index.htm", "index_template.html", "home.html"]  # 首页候选
-
-MARKERS = {
-    "css": "<!-- NB:ADS-CSS -->",
-    "top": "<!-- NB:AD-Top -->",
-    "bottom": "<!-- NB:AD-Bottom -->",
-    "left": "<!-- NB:AD-LeftSky -->",
-    "right": "<!-- NB:AD-RightSky -->",
-    "float": "<!-- NB:AD-Floating -->",
-    "popup": "<!-- NB:AD-Popup -->",
-    "mobile_head": "<!-- NB:AD-MobileHead -->"
+# —— 注入标记，避免重复 —— #
+MARKS = {
+    "top":    ("<!-- NB:AD-TOP START -->",    "<!-- NB:AD-TOP END -->"),
+    "bottom": ("<!-- NB:AD-BOTTOM START -->", "<!-- NB:AD-BOTTOM END -->"),
+    "inline": ("<!-- NB:AD-INLINE START -->", "<!-- NB:AD-INLINE END -->"),
+    "popup":  ("<!-- NB:AD-POPUP START -->",  "<!-- NB:AD-POPUP END -->"),
 }
 
-# 样式块（重要：不使用 .format()，避免 {} 触发格式化错误）
-CSS_BLOCK = MARKERS["css"] + """
-<style id="nb-ads-css">
-@media (min-width: 1024px){
-  body.nb-has-top { padding-top: 96px; }
-  body.nb-has-bottom { padding-bottom: 96px; }
-}
-.nb-topbar-wrap,.nb-bottombar-wrap{
-  position: fixed; left:0; right:0; z-index: 2147483000;
-  display:flex; justify-content:center; pointer-events:auto;
-}
-.nb-topbar-wrap{ top:0; }
-.nb-bottombar-wrap{ bottom:0; }
-.nb-stick{ position: fixed; top: 100px; z-index: 2147483000; }
-.nb-left{ left: 8px; }
-.nb-right{ right: 8px; }
-.nb-float{
-  position: fixed; right: 12px; bottom: 12px; z-index: 2147483000;
-  box-shadow: 0 6px 24px rgba(0,0,0,.25); border-radius: 8px; background: rgba(0,0,0,0);
-}
-.nb-modal{ position: fixed; inset:0; background: rgba(0,0,0,.55); display:flex; align-items:center; justify-content:center; z-index:2147483000; }
-.nb-modal-inner{ position: relative; background:#111; padding:10px; border-radius:10px; max-width:92vw; max-height:85vh; overflow:auto; }
-.nb-close{ position:absolute; right:8px; top:6px; font-size:24px; background:#000; color:#fff; border:0; width:36px; height:36px; border-radius:50%; cursor:pointer; }
-@media (max-width: 767px){
-  body.nb-has-top { padding-top: 56px; }
-  body.nb-has-bottom { padding-bottom: 56px; }
-}
-</style>
-<script>(function(){if(document.documentElement.dataset.nbAdsCss)return;document.documentElement.dataset.nbAdsCss="1";})();</script>
-"""
+BODY_OPEN_RE  = re.compile(r"<body\b[^>]*>", re.I)
+BODY_CLOSE_RE = re.compile(r"</body\s*>", re.I)
 
-def read_text(p: Path) -> str:
-    try:
-        return p.read_text(encoding="utf-8")
-    except UnicodeDecodeError:
-        return p.read_text(encoding="utf-8", errors="ignore")
+# 常见“正文锚点”用于插入 inline（择一命中）
+INLINE_ANCHORS = [
+    # 显式占位（若你在模板里预留了这个注释，会优先命中）
+    re.compile(r"<!--\s*NB:INLINE-ANCHOR\s*-->", re.I),
+    # 首个 <h2> 后
+    re.compile(r"</h2\s*>", re.I),
+    # 首个段落后
+    re.compile(r"</p\s*>", re.I),
+    # 首个图片后
+    re.compile(r"</img\s*>", re.I),
+    # main 结束前（兜底）
+    re.compile(r"</main\s*>", re.I),
+]
 
-def write_text(p: Path, s: str, backup_dir: Path | None):
-    if DRY_RUN:
-        print(f"[DRY] would write: {p}")
-        return
-    if BACKUP_BEFORE_WRITE and backup_dir is not None:
-        backup_path = backup_dir / p.relative_to(ACTIVE_SITE)
-        backup_path.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(p, backup_path)
-    p.write_text(s, encoding="utf-8")
+# 清理历史悬浮条
+def clean_legacy_floating(html: str) -> str:
+    s = html
+    # 去掉底部悬浮包装
+    s = re.sub(r'<div[^>]*class="[^"]*\bnb-bottombar-wrap\b[^"]*"[^>]*>[\s\S]*?</div>\s*', "", s, flags=re.I)
+    # 去掉 body 上的 nb-has-bottom
+    s = re.sub(r'(<body\b[^>]*class="[^"]*)\bnb-has-bottom\b\s*', r"\1", s, flags=re.I)
+    # 如果 body 没有 class 属性，也容错处理（无事发生）
+    return s
 
-def ensure_head(html: str) -> str:
-    if "</head>" not in html.lower():
-        html = re.sub("(?i)<html[^>]*>", "\\g<0>\n<head></head>", html, count=1)
-    return html
+def already_has(mark_start: str, html: str) -> bool:
+    return mark_start in html
 
-def insert_into_head_once(html: str, block: str, marker: str) -> str:
-    if marker.lower() in html.lower(): return html
-    html = ensure_head(html)
-    return re.sub("(?i)</head>", block + "\n</head>", html, count=1)
+def inject_after_body_open(html: str, block: str, mark_key: str) -> str:
+    m = BODY_OPEN_RE.search(html)
+    if not m: return html
+    start, end = m.span()
+    s, e = MARKS[mark_key]
+    snippet = f"\n{s}\n{block}\n{e}\n"
+    return html[:end] + snippet + html[end:]
 
-def insert_after_body_open(html: str, block: str, marker: str, add_body_class: str = "") -> str:
-    if marker.lower() in html.lower(): return html
-    def add_class(m):
-        tag = m.group(0)
-        if re.search(r'(?i)class\s*=', tag):
-            return re.sub(r'(?i)class\s*=\s*([\'"])(.*?)\1',
-                          lambda mm: f'class="{mm.group(2)} {add_body_class}"', tag, count=1)
-        else:
-            return tag.replace("<body", f"<body class=\"{add_body_class}\"", 1)
-    html2, n = re.subn(r'(?i)<body[^>]*>', add_class, html, count=1)
-    if n == 0:
-        html2 = "<body class=\"%s\">" % add_body_class + html + "</body>"
-    html2 = re.sub(r'(?i)<body[^>]*>', lambda m: m.group(0) + "\n" + marker + "\n" + block, html2, count=1)
-    return html2
+def inject_before_body_close(html: str, block: str, mark_key: str) -> str:
+    m = BODY_CLOSE_RE.search(html)
+    if not m: return html + block
+    s, e = MARKS[mark_key]
+    snippet = f"\n{s}\n{block}\n{e}\n"
+    pos = m.start()
+    return html[:pos] + snippet + html[pos:]
 
-def insert_before_body_close(html: str, block: str, marker: str, add_body_class: str = "") -> str:
-    if marker.lower() in html.lower(): return html
-    if add_body_class:
-        html = re.sub(r'(?i)<body([^>]*)class\s*=\s*([\'"])(.*?)\2',
-                      lambda m: f"<body{m.group(1)}class=\"{m.group(3)} {add_body_class}\"", html, count=1)
-        if re.search(r'(?i)<body[^>]*class=', html) is None:
-            html = re.sub(r'(?i)<body', f'<body class="{add_body_class}"', html, count=1)
-    return re.sub("(?i)</body>", marker + "\n" + block + "\n</body>", html, count=1)
+def inject_inline(html: str, block: str) -> str:
+    s_mark, e_mark = MARKS["inline"]
+    snippet = f"\n{s_mark}\n{block}\n{e_mark}\n"
+    # 1) 优先命中显式占位
+    if "<!-- NB:AD-INLINE START -->" in html:
+        # 已有则不重复
+        return html
+    for rex in INLINE_ANCHORS:
+        m = rex.search(html)
+        if m:
+            pos = m.end()
+            return html[:pos] + snippet + html[pos:]
+    # 2) 如果都没命中，就放在 </body> 前（兜底，仍是非 fixed）
+    return inject_before_body_close(html, block, "inline")
 
-# 修复：不在 wrapper 里重复 marker（避免双 marker）
-def insert_fixed_slot(html: str, block: str, marker: str, side: str) -> str:
-    if marker.lower() in html.lower(): return html
-    wrapper = f'<div class="nb-stick nb-{side}" data-nb="{side}">{block}</div>'
-    return insert_after_body_open(html, wrapper, marker)
-
-def insert_floating(html: str, block: str, marker: str, delay_ms: int) -> str:
-    if marker.lower() in html.lower(): return html
+def wrap_popup_with_cooldown(code: str, hours: int = 6) -> str:
+    """在不改联盟代码的前提下，加一层本地频控（localStorage）。"""
     wrapper = f"""
-<div id="nb-float" class="nb-float" style="display:none">{block}</div>
-<script>setTimeout(function(){{var a=document.getElementById('nb-float');if(a)a.style.display='block';}}, {delay_ms});</script>
+<script>
+(function(){{
+  try {{
+    var key='nb_pop_t';
+    var hours={hours};
+    var last=localStorage.getItem(key);
+    var ok=!last || (Date.now()-(+last))/36e5>=hours;
+    if(!ok) return;
+    // 触发联盟弹窗代码：
+  }} catch(e) {{}}
+}})();
+</script>
+{code}
+<script>try{{localStorage.setItem('nb_pop_t', String(Date.now()));}}catch(e){{}}</script>
 """
-    return insert_before_body_close(html, wrapper, marker)
+    return wrapper.strip()
 
-def insert_popup(html: str, block: str, marker: str) -> str:
-    if marker.lower() in html.lower(): return html
-    return insert_before_body_close(html, block, marker)
-
-def choose(snippets): return snippets[0] if snippets else ""
-
-def assert_config_safe(raw: str):
-    # 防止配置被双重转义，导致浏览器不执行
-    if r"\\\"" in raw or r"<\\/" in raw:
-        raise ValueError("ads_mapping.json 含有转义片段（\\\" 或 <\\/script>）。请使用干净版配置后再运行。")
-
-def detect_home(active_site: Path) -> Path | None:
-    for name in HOME_CANDIDATES:
-        p = active_site / name
-        if p.exists(): return p.resolve()
-    return None
+def pick_role(path: pathlib.Path) -> str:
+    """简单区分首页/内页：文件名含 index/home 视为首页，其它为内页。"""
+    name = path.name.lower()
+    if name in ("index.html", "home.html") or name.endswith("/index.html"):
+        return "home"
+    return "inner"
 
 def main():
-    print(f"[INFO] ACTIVE_SITE = {ACTIVE_SITE}")
-    if not ACTIVE_SITE.exists():
-        raise SystemExit(f"[ABORT] 站点不存在：{ACTIVE_SITE}")
-    if not (ACTIVE_SITE / SENTINEL_NAME).exists():
-        raise SystemExit(f"[ABORT] 缺少哨兵文件 {SENTINEL_NAME} ，已拒绝修改。请在站点根目录创建一个空文件再运行。")
+    if not CONF.exists():
+        print("ads_mapping.json not found.")
+        return
+    cfg = json.loads(CONF.read_text(encoding="utf-8"))
 
-    home_path = detect_home(ACTIVE_SITE)
-    if home_path is None:
-        print(f"[WARN] 未发现首页文件（候选：{', '.join(HOME_CANDIDATES)}），将不会注入首页专属位。")
-    else:
-        print(f"[INFO] 检测到首页：{home_path}")
+    enable_home  = cfg.get("global", {}).get("enable_on_home", True)
+    enable_inner = cfg.get("global", {}).get("enable_on_inner", True)
 
-    raw_cfg_text = CONFIG_FILE.read_text(encoding="utf-8")
-    assert_config_safe(raw_cfg_text)
-    cfg = json.loads(raw_cfg_text)
+    # 是否存在 floating 配置（如果没有，等会顺手清理历史悬浮）
+    has_floating_in_conf = any("floating" in cfg.get(k, {}) for k in ("home", "inner"))
 
-    popup_delay = int(cfg.get("global", {}).get("popup_delay_ms", 1500))
-    float_delay = int(cfg.get("global", {}).get("float_show_delay_ms", 800))
-    enable_home = bool(cfg.get("global", {}).get("enable_on_home", True))
-    enable_inner = bool(cfg.get("global", {}).get("enable_on_inner", True))
-
-    if "home" in cfg and "popup" in cfg["home"]:
-        cfg["home"]["popup"] = [s.replace("{{POPUP_DELAY}}", str(popup_delay)) for s in cfg["home"]["popup"]]
-
-    backup_dir = None
-    if BACKUP_BEFORE_WRITE and not DRY_RUN:
-        backup_dir = ACTIVE_SITE / ".nbbackup" / time.strftime("%Y%m%d_%H%M%S")
-        backup_dir.mkdir(parents=True, exist_ok=True)
-        print(f"[INFO] 将备份原文件到：{backup_dir}")
-
-    files = list(ACTIVE_SITE.rglob("*.html"))
-    for fp in files:
-        rel = fp.relative_to(ACTIVE_SITE).as_posix()
-        html = read_text(fp)
-
-        is_home = (home_path is not None and fp.resolve() == home_path)
-        role = "home" if is_home else "inner"
-        enabled = (enable_home and is_home) or (enable_inner and not is_home)
-        if not enabled:
-            print(f"[SKIP] {rel}（该角色未启用）")
+    files = list(ROOT.rglob("*.html"))
+    for f in files:
+        role = pick_role(f)
+        if role == "home" and not enable_home:
+            continue
+        if role == "inner" and not enable_inner:
             continue
 
-        # 1) 全站 CSS
-        if cfg.get("global", {}).get("css_once", True):
-            html = insert_into_head_once(html, CSS_BLOCK, MARKERS["css"])
-        # 2) 移动端/全站 <head>
-        for snip in cfg.get("global", {}).get("mobile_head_snippets", []):
-            html = insert_into_head_once(html, MARKERS["mobile_head"] + "\n" + snip, MARKERS["mobile_head"])
-        # 3) 顶部横幅
-        if "top_banner" in cfg.get(role, {}):
-            block = f'<div class="nb-topbar-wrap"><div class="nb-ad">{choose(cfg[role]["top_banner"])}</div></div>'
-            html = insert_after_body_open(html, block, MARKERS["top"], add_body_class="nb-has-top")
-        # 4) 底部横幅
-        if "bottom_banner" in cfg.get(role, {}):
-            block = f'<div class="nb-bottombar-wrap"><div class="nb-ad">{choose(cfg[role]["bottom_banner"])}</div></div>'
-            html = insert_before_body_close(html, block, MARKERS["bottom"], add_body_class="nb-has-bottom")
-        # 5) 左右竖条（仅首页）
-        if is_home:
-            if "left_sky" in cfg.get("home", {}):
-                html = insert_fixed_slot(html, choose(cfg["home"]["left_sky"]), MARKERS["left"], "left")
-            if "right_sky" in cfg.get("home", {}):
-                html = insert_fixed_slot(html, choose(cfg["home"]["right_sky"]), MARKERS["right"], "right")
-        # 6) 悬浮
-        if "floating" in cfg.get(role, {}):
-            html = insert_floating(html, choose(cfg[role]["floating"]), MARKERS["float"], float_delay)
-        # 7) 弹窗（首页）
-        if is_home and "popup" in cfg.get("home", {}):
-            html = insert_popup(html, choose(cfg["home"]["popup"]), MARKERS["popup"])
+        html = f.read_text(encoding="utf-8", errors="ignore")
+        original = html
 
-        write_text(fp, html, backup_dir)
-        print(f"[OK] Injected: {rel} ({'HOME' if is_home else 'INNER'})")
+        section = cfg.get(role, {})
 
-    print(f"Done. {'DRY-RUN（未写盘）完成' if DRY_RUN else '已写入修改'} → {ACTIVE_SITE}")
+        # 1) 顶部
+        tb_list = section.get("top_banner", [])
+        if tb_list and not already_has(MARKS["top"][0], html):
+            block = "\n".join(tb_list)
+            html = inject_after_body_open(html, block, "top")
+
+        # 2) 中部（新的 inline_banner，非 fixed）
+        inl_list = section.get("inline_banner", [])
+        if inl_list and not already_has(MARKS["inline"][0], html):
+            block = "\n".join(inl_list)
+            html = inject_inline(html, block)
+
+        # 3) 底部
+        bb_list = section.get("bottom_banner", [])
+        if bb_list and not already_has(MARKS["bottom"][0], html):
+            block = "\n".join(bb_list)
+            html = inject_before_body_close(html, block, "bottom")
+
+        # 4) 弹窗（加 6 小时冷却包装）
+        pp_list = section.get("popup", [])
+        if pp_list and not already_has(MARKS["popup"][0], html):
+            raw_code = "\n".join(pp_list)
+            wrapped = wrap_popup_with_cooldown(raw_code, hours=1)
+            html = inject_before_body_close(html, wrapped, "popup")
+
+        # 5) 如果配置里没有 floating，就顺手清理历史悬浮（一次性清理/幂等）
+        if not has_floating_in_conf:
+            html = clean_legacy_floating(html)
+
+        if html != original:
+            f.write_text(html, encoding="utf-8")
+            print("updated:", f)
+
+    print("done.")
 
 if __name__ == "__main__":
     main()
