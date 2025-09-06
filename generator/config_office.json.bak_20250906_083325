@@ -20,36 +20,36 @@
   "base_style": "photo-realistic portrait of a beautiful young woman, cinematic lighting, rim light, soft key light, high dynamic range, detailed skin pores, clean background, professional photography, no text, no watermark",
   "negative_prompt": "(worst quality, low quality, jpeg artifacts, oversaturated, overexposed, underexposed), blur, noise, banding, aliasing, plastic skin, waxy skin, flat lighting, harsh shadow, duplicate, deformed, extra fingers, bad hands, bad anatomy, crooked eyes, watermark, logo, text, caption, signature, nsfw",
   "images": 20,
-  "category": "uniform",
-  "site_id": 104,
-  "outdir": "./output/uniform",
+  "category": "office",
+  "site_id": 108,
+  "outdir": "./output/office",
   "prompt_blocks": {
     "scene": [
-      "office lobby",
-      "bright study room",
-      "minimal indoor corridor"
+      "tidy desk setup with laptop",
+      "modern office corner",
+      "glass window background"
     ],
     "outfit": [
-      "white blouse and black skirt",
-      "neat uniform dress",
-      "blazer with tie"
+      "business casual blouse",
+      "blazer and trousers",
+      "pencil skirt with blouse"
     ],
     "lighting": [
-      "window soft light",
-      "even neutral light"
+      "side window soft light",
+      "neutral corporate light"
     ],
     "color": [
-      "neutral corporate tones"
+      "soft gray palette",
+      "muted blue accents"
     ],
     "pose": [
       "standing 3/4 view, S-curve pose",
-      "looking over shoulder, confident gaze",
-      "hands gently touching hair"
+      "leaning on the edge, relaxed posture"
     ],
     "camera": [
       "85mm lens, f/1.8, shallow depth of field",
       "50mm lens, f/1.4, shallow depth of field"
     ]
   },
-  "prompt": "1girl, solo, single subject, one woman only\nphoto-realistic, ultra-detailed, cinematic portrait, 9:16 vertical, \nbeautiful young woman, elegant and attractive, natural beauty, \nunique facial features, subtle asymmetry allowed, realistic skin texture, \nhighly detailed eyes, sharp iris, glossy lips, natural nose, \nnatural expression, soft makeup, \nsoft studio light, rim light on hair, warm skin tone, \nprofessional photography style, depth of field, cinematic color grading, \nsharp focus, award-winning portrait photo, uniform woman john paul richard, uniform fashion, uniform photo editor online, natural skin tone, side swept bangs, casual two piece set, warm golden glow, neutral pastel tones, sensual vibe, elegant posture, tasteful composition"
+  "prompt": "photo-realistic, ultra-detailed, cinematic portrait, 9:16 vertical, \nbeautiful young woman, elegant and attractive, natural beauty, \nunique facial features, subtle asymmetry allowed, realistic skin texture, \nhighly detailed eyes, sharp iris, glossy lips, natural nose, \nnatural expression, soft makeup, \nsoft studio light, rim light on hair, warm skin tone, \nprofessional photography style, depth of field, cinematic color grading, \nsharp focus, award-winning portrait photo, office aesthetic decor, office women outfits, soft pink highlight, soft golden hair, business casual blazer with skirt, warm golden glow, neutral pastel tones, sensual vibe, elegant posture, tasteful composition"
 }

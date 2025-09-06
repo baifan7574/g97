@@ -20,25 +20,28 @@
   "base_style": "photo-realistic portrait of a beautiful young woman, cinematic lighting, rim light, soft key light, high dynamic range, detailed skin pores, clean background, professional photography, no text, no watermark",
   "negative_prompt": "(worst quality, low quality, jpeg artifacts, oversaturated, overexposed, underexposed), blur, noise, banding, aliasing, plastic skin, waxy skin, flat lighting, harsh shadow, duplicate, deformed, extra fingers, bad hands, bad anatomy, crooked eyes, watermark, logo, text, caption, signature, nsfw",
   "images": 20,
-  "category": "redroom",
-  "site_id": 110,
-  "outdir": "./output/redroom",
+  "category": "dark",
+  "site_id": 107,
+  "outdir": "./output/dark",
   "prompt_blocks": {
     "scene": [
-      "deep red backdrop",
-      "studio with red gel lights",
-      "crimson ambience"
+      "moody studio backdrop",
+      "dimly lit corridor",
+      "noir interior"
     ],
     "outfit": [
-      "sleek red dress",
-      "black outfit with red accent"
+      "black turtleneck",
+      "sleek dark dress",
+      "minimalist outfit"
     ],
     "lighting": [
-      "red gel side light",
-      "low key with controlled highlights"
+      "low key lighting",
+      "subtle rim light",
+      "cinematic contrast"
     ],
     "color": [
-      "deep crimson ambience"
+      "deep shadows",
+      "charcoal palette"
     ],
     "pose": [
       "standing 3/4 view, S-curve pose",
@@ -49,5 +52,5 @@
       "105mm lens, f/2.0, portrait perspective"
     ]
   },
-  "prompt": "1girl, solo, single subject, one woman only\nphoto-realistic, ultra-detailed, cinematic portrait, 9:16 vertical, \nbeautiful young woman, elegant and attractive, natural beauty, \nunique facial features, subtle asymmetry allowed, realistic skin texture, \nhighly detailed eyes, sharp iris, glossy lips, natural nose, \nnatural expression, soft makeup, \nsoft studio light, rim light on hair, warm skin tone, \nprofessional photography style, depth of field, cinematic color grading, \nsharp focus, award-winning portrait photo, red aesthetic women, red aesthetic girl shadow, Kodak Portra vibe, shoulder length bob, lace trim outfit, warm golden glow, neutral pastel tones, sensual vibe, elegant posture, tasteful composition"
+  "prompt": "photo-realistic, ultra-detailed, cinematic portrait, 9:16 vertical, \nbeautiful young woman, elegant and attractive, natural beauty, \nsymmetrical face, soft smooth skin, realistic skin texture, \nhighly detailed eyes, sharp iris, glossy lips, natural nose, \nrealistic facial expression, subtle makeup, soft eyeliner, natural blush, \nperfect lighting balance, professional photography style, \nbokeh background, depth of field, cinematic color grading, \nsoft studio light, rim light on hair, warm skin tone, \nsharp focus, award-winning portrait photo, dark aesthetic photo edit iphone, dark academia aesthetic style, muted cinematic tones, long wavy hair, short denim shorts, warm golden glow, neutral pastel tones, sensual vibe, elegant posture, tasteful composition"
 }
