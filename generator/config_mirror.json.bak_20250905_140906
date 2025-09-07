@@ -1,55 +1,21 @@
 {
-  "sampler_name": "DPM++ 2M Karras",
-  "steps": 28,
-  "cfg_scale": 6.5,
-  "width": 768,
-  "height": 1344,
-  "hires_fix": {
-    "enable": true,
-    "scale": 1.6,
-    "upscaler": "R-ESRGAN 4x+ Anime6B",
-    "denoise": 0.35
-  },
-  "adetailer": {
-    "enable": true,
-    "face_denoise": 0.36,
-    "hand_denoise": 0.28,
-    "confidence": 0.3
-  },
-  "seed_mode": "site",
-  "base_style": "photo-realistic portrait of a beautiful young woman, cinematic lighting, rim light, soft key light, high dynamic range, detailed skin pores, clean background, professional photography, no text, no watermark",
-  "negative_prompt": "(worst quality, low quality, jpeg artifacts, oversaturated, overexposed, underexposed), blur, noise, banding, aliasing, plastic skin, waxy skin, flat lighting, harsh shadow, duplicate, deformed, extra fingers, bad hands, bad anatomy, crooked eyes, watermark, logo, text, caption, signature, nsfw",
-  "images": 20,
-  "category": "mirror",
-  "site_id": 105,
-  "outdir": "./output/mirror",
-  "prompt_blocks": {
-    "scene": [
-      "tall mirror",
-      "mirror near window",
-      "wardrobe mirror in bright room"
-    ],
-    "outfit": [
-      "casual chic outfit",
-      "sleek minimal dress",
-      "light sweater and skirt"
-    ],
-    "lighting": [
-      "golden hour window light",
-      "soft backlight"
-    ],
-    "color": [
-      "warm neutral palette",
-      "light wood tones"
-    ],
-    "pose": [
-      "mirror selfie pose, elegant",
-      "looking over shoulder, confident gaze",
-      "hands gently touching hair, natural smile"
-    ],
-    "camera": [
-      "85mm lens, f/1.8, shallow depth of field",
-      "35mm environmental portrait, f/2.0"
-    ]
-  }
+  "model": "realisticVisionV60B1_v51HyperVAE",
+  "lora": "",
+  "width": 512,
+  "height": 768,
+  "steps": 22,
+  "cfg_scale": 6.8,
+  "sampler_index": "DPM++ 2M",
+  "hires_fix": true,
+  "hires_upscaler": "Latent",
+  "hires_scale": 1.5,
+  "hires_denoising_strength": 0.5,
+  "refiner": false,
+  "batch_size": 1,
+  "total_images": 1,
+  "seed": 1724286373,
+  "negative_prompt": "nsfw, nude, lowres, cartoon, text, logo, watermark, ugly, deformed, extra fingers, poorly drawn hands, distorted face, blurry, noisy, overexposed, underexposed, messy background",
+  "prompt": "photo-realistic portrait, hotel full-length mirror, golden hour window light, refined mirror selfie, mirror girl room",
+  "output_dir": "../mirror",
+  "category": "mirror"
 }

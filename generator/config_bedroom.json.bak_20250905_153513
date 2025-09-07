@@ -1,62 +1,21 @@
 {
-  "sampler_name": "DPM++ 2M Karras",
-  "steps": 28,
-  "cfg_scale": 6.5,
-  "width": 768,
-  "height": 1344,
-  "hires_fix": {
-    "enable": true,
-    "scale": 1.6,
-    "upscaler": "R-ESRGAN 4x+ Anime6B",
-    "denoise": 0.35
-  },
-  "adetailer": {
-    "enable": true,
-    "face_denoise": 0.36,
-    "hand_denoise": 0.28,
-    "confidence": 0.3
-  },
-  "seed_mode": "site",
-  "base_style": "photo-realistic portrait of a beautiful young woman, cinematic lighting, rim light, soft key light, high dynamic range, detailed skin pores, clean background, professional photography, no text, no watermark",
-  "negative_prompt": "(worst quality, low quality, jpeg artifacts, oversaturated, overexposed, underexposed), blur, noise, banding, aliasing, plastic skin, waxy skin, flat lighting, harsh shadow, duplicate, deformed, extra fingers, bad hands, bad anatomy, crooked eyes, watermark, logo, text, caption, signature, nsfw",
-  "images": 20,
-  "category": "bedroom",
-  "site_id": 102,
-  "outdir": "./output/bedroom",
-  "base_prompt": "cozy bedroom, soft natural window light, warm tone, shallow depth of field, sitting on bed, delicate makeup, detailed skin",
-  "images_count": 20,
-  "denoising_strength": 0.25,
-  "prompt_blocks": {
-    "scene": [
-      "cozy bedroom",
-      "clean white sheets",
-      "minimalist scandinavian bedroom",
-      "soft duvet textures"
-    ],
-    "outfit": [
-      "casual knit top",
-      "loose white shirt",
-      "soft loungewear",
-      "pastel cardigan"
-    ],
-    "lighting": [
-      "window soft light",
-      "morning ambient light"
-    ],
-    "color": [
-      "pastel palette",
-      "neutral whites",
-      "warm beige"
-    ],
-    "pose": [
-      "seated on sofa, legs elegantly posed",
-      "leaning on the edge, relaxed posture",
-      "hands gently touching hair, natural smile"
-    ],
-    "camera": [
-      "85mm lens, f/1.8, shallow depth of field",
-      "35mm environmental portrait, f/2.0"
-    ]
-  },
-  "prompt": "photo-realistic, ultra-detailed, cinematic portrait, 9:16 vertical, \nbeautiful young woman, elegant and attractive, natural beauty, \nsymmetrical face, soft smooth skin, realistic skin texture, \nhighly detailed eyes, sharp iris, glossy lips, natural nose, \nrealistic facial expression, subtle makeup, soft eyeliner, natural blush, \nperfect lighting balance, professional photography style, \nbokeh background, depth of field, cinematic color grading, \nsoft studio light, rim light on hair, warm skin tone, \nsharp focus, award-winning portrait photo, bedroom girl plant mom, bedroom girl digital detox, bedroom girl bedtime vibe, bedroom girl vintage look, vintage faded look, natural loose hair, bodycon dress, warm golden glow, neutral pastel tones, sensual vibe, elegant posture, tasteful composition"
+  "model": "realisticVisionV60B1_v51HyperVAE",
+  "lora": "",
+  "width": 512,
+  "height": 768,
+  "steps": 22,
+  "cfg_scale": 6.8,
+  "sampler_index": "DPM++ 2M",
+  "hires_fix": true,
+  "hires_upscaler": "Latent",
+  "hires_scale": 1.5,
+  "hires_denoising_strength": 0.5,
+  "refiner": false,
+  "batch_size": 1,
+  "total_images": 1,
+  "seed": 1019176532,
+  "negative_prompt": "nsfw, nude, lowres, cartoon, text, logo, watermark, ugly, deformed, extra fingers, poorly drawn hands, distorted face, blurry, noisy, overexposed, underexposed, messy background",
+  "prompt": "photo-realistic, ultra-detailed, cinematic portrait, 9:16 vertical, \nbeautiful young woman, elegant and attractive, natural beauty, \nsymmetrical face, soft smooth skin, realistic skin texture, \nhighly detailed eyes, sharp iris, glossy lips, natural nose, \nrealistic facial expression, subtle makeup, soft eyeliner, natural blush, \nperfect lighting balance, professional photography style, \nbokeh background, depth of field, cinematic color grading, \nsoft studio light, rim light on hair, warm skin tone, \nsharp focus, award-winning portrait photo, bedroom girl anime style, bedroom girl playlist, bedroom girl interior, cinematic teal and orange, soft curls, sporty leggings, warm golden glow, Kodak Portra vibe, sensual vibe, elegant posture, tasteful composition",
+  "output_dir": "../bedroom",
+  "category": "bedroom"
 }

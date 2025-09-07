@@ -1,55 +1,21 @@
 {
-  "sampler_name": "DPM++ 2M Karras",
-  "steps": 28,
-  "cfg_scale": 6.5,
-  "width": 768,
-  "height": 1344,
-  "hires_fix": {
-    "enable": true,
-    "scale": 1.6,
-    "upscaler": "R-ESRGAN 4x+ Anime6B",
-    "denoise": 0.35
-  },
-  "adetailer": {
-    "enable": true,
-    "face_denoise": 0.36,
-    "hand_denoise": 0.28,
-    "confidence": 0.3
-  },
-  "seed_mode": "site",
-  "base_style": "photo-realistic portrait of a beautiful young woman, cinematic lighting, rim light, soft key light, high dynamic range, detailed skin pores, clean background, professional photography, no text, no watermark",
-  "negative_prompt": "(worst quality, low quality, jpeg artifacts, oversaturated, overexposed, underexposed), blur, noise, banding, aliasing, plastic skin, waxy skin, flat lighting, harsh shadow, duplicate, deformed, extra fingers, bad hands, bad anatomy, crooked eyes, watermark, logo, text, caption, signature, nsfw",
-  "images": 20,
-  "category": "uniform",
-  "site_id": 104,
-  "outdir": "./output/uniform",
-  "prompt_blocks": {
-    "scene": [
-      "office lobby",
-      "bright study room",
-      "minimal indoor corridor"
-    ],
-    "outfit": [
-      "white blouse and black skirt",
-      "neat uniform dress",
-      "blazer with tie"
-    ],
-    "lighting": [
-      "window soft light",
-      "even neutral light"
-    ],
-    "color": [
-      "neutral corporate tones"
-    ],
-    "pose": [
-      "standing 3/4 view, S-curve pose",
-      "looking over shoulder, confident gaze",
-      "hands gently touching hair"
-    ],
-    "camera": [
-      "85mm lens, f/1.8, shallow depth of field",
-      "50mm lens, f/1.4, shallow depth of field"
-    ]
-  },
-  "prompt": "photo-realistic, ultra-detailed, cinematic portrait, 9:16 vertical, \nbeautiful young woman, elegant and attractive, natural beauty, \nunique facial features, subtle asymmetry allowed, realistic skin texture, \nhighly detailed eyes, sharp iris, glossy lips, natural nose, \nnatural expression, soft makeup, \nsoft studio light, rim light on hair, warm skin tone, \nprofessional photography style, depth of field, cinematic color grading, \nsharp focus, award-winning portrait photo, uniform fashions photos, uniform style body armor, uniform photoshoot, Kodak Portra vibe, half up half down, tight dress silhouette, warm golden glow, neutral pastel tones, sensual vibe, elegant posture, tasteful composition"
+  "model": "realisticVisionV60B1_v51HyperVAE",
+  "lora": "",
+  "width": 512,
+  "height": 768,
+  "steps": 23,
+  "cfg_scale": 6.8,
+  "sampler_index": "DPM++ 2M",
+  "hires_fix": true,
+  "hires_upscaler": "Latent",
+  "hires_scale": 1.5,
+  "hires_denoising_strength": 0.5,
+  "refiner": false,
+  "batch_size": 1,
+  "total_images": 1,
+  "seed": 1339678240,
+  "negative_prompt": "nsfw, nude, lowres, cartoon, text, logo, watermark, ugly, deformed, extra fingers, poorly drawn hands, distorted face, blurry, noisy, overexposed, underexposed, messy background",
+  "prompt": "photo-realistic, ultra-detailed, cinematic portrait, 9:16 vertical, \nbeautiful young woman, elegant and attractive, natural beauty, \nunique facial features, subtle asymmetry allowed, realistic skin texture, \nhighly detailed eyes, sharp iris, glossy lips, natural nose, \nnatural expression, soft makeup, \nsoft studio light, rim light on hair, warm skin tone, \nprofessional photography style, depth of field, cinematic color grading, \nsharp focus, award-winning portrait photo, uniform photo pose, pilot uniform woman, uniform aesthetic pinterest, uniform aesthetic name, warm golden feel, long wavy hair, oversized shirt with belt, warm golden glow, Kodak Portra vibe, sensual vibe, elegant posture, tasteful composition",
+  "output_dir": "../uniform",
+  "category": "uniform"
 }
