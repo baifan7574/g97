@@ -1,0 +1,7 @@
+{
+  "mode": "online",
+  "use_google": true,
+  "use_bing": false,
+  "sleep_range": [0.8, 1.2],
+  "retries": 2
+}

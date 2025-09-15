@@ -26,3 +26,12 @@ tags\moody-tones.html
 tags\morning-light.html
 tags\natural-look.html
 tags\soft-portraits.html
+404.html
+index.html
+index_template.html
+link_list.html
+tags\cozy-bedroom.html
+tags\moody-tones.html
+tags\morning-light.html
+tags\natural-look.html
+tags\soft-portraits.html
