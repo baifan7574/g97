@@ -1,0 +1,21 @@
+{
+  "model": "realisticVisionV60B1_v51HyperVAE",
+  "lora": "",
+  "width": 512,
+  "height": 768,
+  "steps": 23,
+  "cfg_scale": 6.8,
+  "sampler_index": "DPM++ 2M",
+  "hires_fix": true,
+  "hires_upscaler": "Latent",
+  "hires_scale": 1.5,
+  "hires_denoising_strength": 0.5,
+  "refiner": false,
+  "batch_size": 1,
+  "total_images": 1,
+  "seed": 1339678240,
+  "negative_prompt": "nsfw, nude, lowres, cartoon, text, logo, watermark, ugly, deformed, extra fingers, poorly drawn hands, distorted face, blurry, noisy, overexposed, underexposed, messy background",
+  "prompt": "1girl, solo, single subject, one woman only\nphoto-realistic, ultra-detailed, cinematic portrait, 9:16 vertical, \nbeautiful young woman, elegant and attractive, natural beauty, \nunique facial features, subtle asymmetry allowed, realistic skin texture, \nhighly detailed eyes, sharp iris, glossy lips, natural nose, \nnatural expression, soft makeup, \nsoft studio light, rim light on hair, warm skin tone, \nprofessional photography style, depth of field, cinematic color grading, \nsharp focus, award-winning portrait photo, unified modeling language (uml) diagrams, uniform photo editor, unified model of advocacy practice, high contrast monochrome, natural loose hair, off shoulder top, warm golden glow, neutral pastel tones, sensual vibe, elegant posture, tasteful composition",
+  "output_dir": "../uniform",
+  "category": "uniform"
+}
